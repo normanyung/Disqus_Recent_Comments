@@ -7,11 +7,10 @@
  * Author URI: http://deusmachine.com
  * Ported to WordPress by: Andrew Bartel, web developer for Deus Machine
  * Original Methodology and Script by: Aaron J. White http://aaronjwhite.org/
- * 
+ *
  */
 
 class disqus_recent_comments_widget extends WP_Widget {
-    
 	public function __construct() {
 		$widget_ops = array( 'classname' => 'deus_disqus_recent_comments_widget', 'description' => __( 'Display Recent Posts From Disqus' , 'disqus_rcw' ) );
 		$control_ops = array( 'width' => 300, 'height' => 230 );
@@ -47,7 +46,7 @@ class disqus_recent_comments_widget extends WP_Widget {
 				"comment_length" => $comment_length,
 				"filter_users" =>$filter_users
 				);
-			  
+			
 			$style_params = apply_filters( 'disqus_rcw_style_parameters' , $style_params );
 			
 		    //put request parameters in an array
@@ -59,7 +58,7 @@ class disqus_recent_comments_widget extends WP_Widget {
 				);
 			
 			$disqus_params = apply_filters( 'disqus_rcw_disqus_parameters' , $disqus_params );
-			  
+			
 		    //Create base request string
 		    $url = "http://disqus.com/api/" . $api_version . "/" . $resource . "." . $output_type;
 		    //add parameters to request string
@@ -78,11 +77,11 @@ class disqus_recent_comments_widget extends WP_Widget {
 		      	if(count($comments) > 0) {
 		      		if($comments != 'You have exceeded your hourly limit of requests') {
 			      		$this->echo_comments(
-				                $comments, 
-				                $api_key,
-				                $style_params,
-				                $args
-				              );
+							$comments,
+							$api_key,
+							$style_params,
+							$args
+						);
 					}
 					else
 					{
@@ -193,7 +192,7 @@ class disqus_recent_comments_widget extends WP_Widget {
 	    //create html string
 	    $recent_comments = $before_widget;
 	    $recent_comments .= $before_title;
-	    $recent_comments .= '<div id="disqus_rcw_title"><h4 class="widgettitle">Recent comments</h4>';
+	    $recent_comments .= 'Recent Comments';
 	    $recent_comments .= $after_title;
 		
 		do_action( 'disqus_rcw_before_comments_loop' );
