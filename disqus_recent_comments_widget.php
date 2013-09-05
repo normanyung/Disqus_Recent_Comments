@@ -264,7 +264,7 @@ class disqus_recent_comments_widget extends WP_Widget {
 
 		do_action( 'disqus_rcw_after_comments_loop');
 
-	    $recent_comments .= '</div>';
+	    // $recent_comments .= '</div>';
 		$recent_comments .= $after_widget;
 		
 		$recent_comments = apply_filters( 'disqus_rcw_recent_comments' , $recent_comments );
