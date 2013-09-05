@@ -12,7 +12,7 @@
 
 class disqus_recent_comments_widget extends WP_Widget {
 	public function __construct() {
-		$widget_ops = array( 'classname' => 'deus_disqus_recent_comments_widget', 'description' => __( 'Display Recent Posts From Disqus' , 'disqus_rcw' ) );
+		$widget_ops = array( 'classname' => 'disqus_recent_comments_widget', 'description' => __( 'Display Recent Posts From Disqus' , 'disqus_rcw' ) );
 		$control_ops = array( 'width' => 300, 'height' => 230 );
 		parent::__construct( 'disqus_recent_comments', __( 'Disqus Recent Comments' , 'disqus_rcw' ), $widget_ops, $control_ops);
 	}
@@ -85,23 +85,23 @@ class disqus_recent_comments_widget extends WP_Widget {
 					}
 					else
 					{
-						$this->no_comments(true);
+						$this->no_comments($args, true);
 					}
 				}
 				else
 				{
-					$this->no_comments();
+					$this->no_comments($args);
 				}
 			}
 			else
 			{
-			  $this->no_comments();
+			  $this->no_comments($args);
 			}
 		
 		}
 		catch(Exception $e)
 		{
-			$this->no_comments();
+			$this->no_comments($args);
 		}
 		
 	}
@@ -155,10 +155,12 @@ class disqus_recent_comments_widget extends WP_Widget {
 		else return $base_url;
 	}
 
-	protected function no_comments( $comment = false ) {
-		echo '<div id="disqus_rcw_comment_wrap"><span id="disqus_rcw_no_comments">No Recent Comments Found</span>';
+	protected function no_comments($args, $comment = false) {
+		$h = $this->widget_html_open($args);
+		echo 'No Recent Comments Found';
 		if( $comment === true ) echo '<!-- hourly limit reached -->';
 		echo '</div>';
+		$h .= $this->widget_html_close($args);
 	}
 
 	protected function file_get_contents_curl( $url ) {
@@ -178,19 +180,33 @@ class disqus_recent_comments_widget extends WP_Widget {
 		$val = trim($val);
 	}
 
-	protected function echo_comments($comment, $api_key, $style_params,$args=false) {
-		
+	protected function widget_html_open($args) {
 		extract($args);
-		//basic counter
-		$comment_counter = 0;
-		//filtered user array
-		$filtered_users = explode(",",$style_params["filter_users"]);
+
 		//create html string
 		$recent_comments = $before_widget;
 		$recent_comments .= $before_title;
 		$recent_comments .= 'Recent Comments';
 		$recent_comments .= $after_title;
-		
+
+		return $recent_comments;
+	}
+
+	protected function widget_html_close($args) {
+		extract($args);
+
+		//create html string
+		return $after_widget;
+	}
+
+	protected function echo_comments($comment, $api_key, $style_params, $args=false) {
+		//basic counter
+		$comment_counter = 0;
+		//filtered user array
+		$filtered_users = explode(",",$style_params["filter_users"]);
+
+		$recent_comments = $this->widget_html_open($args);
+
 		do_action( 'disqus_rcw_before_comments_loop' );
 		
 		if($comment != 'Invalid API key') {
@@ -205,6 +221,7 @@ class disqus_recent_comments_widget extends WP_Widget {
 				}
 				//everything is fine, let's keep going
 				$comment_counter++;
+				
 				 //alternate class
 				if($comment_counter % 2 !== 0) $wrap_class ="disqus_rcw_comment_wrap";
 				else $wrap_class ="disqus_rcw_comment_wrap alter";
@@ -233,23 +250,17 @@ class disqus_recent_comments_widget extends WP_Widget {
 				);
 
 				//create comment html
-				$comment_html = '<div class="disqus_rcw_single_comment_wrapper">
-						<div>
-						  <div>
-							<img class="disqus_rcw_avatar" src="'.$author_avatar.'" alt="'.$author_name.'"/>
-							<div class="disqus_rcw_author_name">
-							  <a href="'.$author_profile.'">'.$author_name.' - <span class="disqus_rcw_post_time">'.$post_time.'</span></a>
-							</div>
-						  </div>
-						  <div class="disqus_rcw_clear"></div>
+				$comment_html = '
+					<div class="disqus_rcw_comment_wrapper">
+						<img class="disqus_rcw_avatar" src="'.$author_avatar.'" alt="'.$author_name.'">
+						<div class="disqus_rcw_author_name">
+							<a href="'.$author_profile.'">'.$author_name.' - <span class="disqus_rcw_post_time">'.$post_time.'</span></a>
 						</div>
-						<div>
-						  <a class="disqus_rcw_thread_title" href="'.$thread_link.'">'.$thread_title.'</a>
-						  <div class="disqus_rcw_comment_actual_wrapper">
+						<div class="disqus_rcw_thread_title"><a href="'.$thread_link.'">'.$thread_title.'</a></div>
+						<div class="disqus_rcw_comment_actual_wrapper">
 							<a href="'.$thread_link.$comment_id.'">'.$message.'</a>
-						  </div>
 						</div>
-					  </div>';
+					</div>';
 				$recent_comments .= $comment_html;
 				//stop loop when we reach limit
 				if($comment_counter == $style_params["comment_limit"]) break;
@@ -259,11 +270,11 @@ class disqus_recent_comments_widget extends WP_Widget {
 		do_action( 'disqus_rcw_after_comments_loop');
 
 		// $recent_comments .= '</div>';
-		$recent_comments .= $after_widget;
+		$recent_comments .= $this->widget_html_close($args);
 		
 		$recent_comments = apply_filters( 'disqus_rcw_recent_comments' , $recent_comments );
 		
-		echo($recent_comments);
+		echo $recent_comments;
 	}
 
 	public function update($new_instance, $old_instance) {
