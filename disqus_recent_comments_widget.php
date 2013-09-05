@@ -15,7 +15,7 @@ class disqus_recent_comments_widget extends WP_Widget {
 		$widget_ops = array( 'classname' => 'deus_disqus_recent_comments_widget', 'description' => __( 'Display Recent Posts From Disqus' , 'disqus_rcw' ) );
 		$control_ops = array( 'width' => 300, 'height' => 230 );
 		parent::__construct( 'disqus_recent_comments', __( 'Disqus Recent Comments' , 'disqus_rcw' ), $widget_ops, $control_ops);
-    }
+	}
 	
 	public function widget($args, $instance) {
 		
@@ -49,34 +49,34 @@ class disqus_recent_comments_widget extends WP_Widget {
 			
 			$style_params = apply_filters( 'disqus_rcw_style_parameters' , $style_params );
 			
-		    //put request parameters in an array
-		    $disqus_params = array( 
-		    	"api_key" => $api_key,
-		    	"forum" => $forum_name,
-		    	"include" => "approved",
-		    	"limit" =>  $comment_limit * 3
+			//put request parameters in an array
+			$disqus_params = array( 
+				"api_key" => $api_key,
+				"forum" => $forum_name,
+				"include" => "approved",
+				"limit" =>  $comment_limit * 3
 				);
 			
 			$disqus_params = apply_filters( 'disqus_rcw_disqus_parameters' , $disqus_params );
 			
-		    //Create base request string
-		    $url = "http://disqus.com/api/" . $api_version . "/" . $resource . "." . $output_type;
-		    //add parameters to request string
-		    $request = $this->add_query_str( $url , $disqus_params );
+			//Create base request string
+			$url = "http://disqus.com/api/" . $api_version . "/" . $resource . "." . $output_type;
+			//add parameters to request string
+			$request = $this->add_query_str( $url , $disqus_params );
 			
-		    // get response with finished request url
-		    $response = $this->file_get_contents_curl( $request );
+			// get response with finished request url
+			$response = $this->file_get_contents_curl( $request );
 			
-		    //check repsonse
-		    if( $response != false ) {
-		    	// convert response to php object 
-		    	$response = @json_decode($response, true);
-		   		// get comment items from response
-		      	$comments = $response["response"];
-		      	//check comment count
-		      	if(count($comments) > 0) {
-		      		if($comments != 'You have exceeded your hourly limit of requests') {
-			      		$this->echo_comments(
+			//check repsonse
+			if($response != false ) {
+				// convert response to php object
+				$response = @json_decode($response, true);
+				// get comment items from response
+				$comments = $response["response"];
+				//check comment count
+				if(count($comments) > 0) {
+					if($comments != 'You have exceeded your hourly limit of requests') {
+						$this->echo_comments(
 							$comments,
 							$api_key,
 							$style_params,
@@ -87,86 +87,82 @@ class disqus_recent_comments_widget extends WP_Widget {
 					{
 						$this->no_comments(true);
 					}
-			    }
-			    else
-			    {
-			      	$this->no_comments();
-			    }
+				}
+				else
+				{
+					$this->no_comments();
+				}
 			}
-		    else
-		    {
-		      $this->no_comments(); 
-		    }
+			else
+			{
+			  $this->no_comments();
+			}
 		
 		}
 		catch(Exception $e)
 		{
-		  	$this->no_comments();
+			$this->no_comments();
 		}
-		  
-    }
-    
+		
+	}
+	
 	protected function shorten_comment($comment, $comment_length) {	
 		if($comment_length != 0) {
-		  	if(strlen($comment) > $comment_length) {
-		    
-		    $comment = preg_replace(
-		                  '/\s+?(\S+)?$/', '', 
-		                  substr($comment, 0, $comment_length+1)
-		                )."...";
+			if(strlen($comment) > $comment_length) {
+				$comment = preg_replace('/\s+?(\S+)?$/', '', substr($comment, 0, $comment_length+1))."...";
 			}
 		}
 		return $comment;
 	}
 
 	protected function get_thread_info( $thread_id, $api_key, $api_version = "3.0", $resource = "threads/details", $output_type = "json" ) {
-	    $dq_request ="http://disqus.com/api/".$api_version."/".$resource.".".$output_type;
-	    $dq_parameter = array( 
-	                "api_key" => $api_key,
-	                "thread" => $thread_id
-	              );
-	    $dq_request = $this->add_query_str($dq_request, $dq_parameter);
-	
-	    // convert response to php object 
-	    $dq_response= $this->file_get_contents_curl($dq_request);
-	    if($dq_response !== false) {
-	      $dq_response = @json_decode($dq_response, true);
-	      $dq_thread = $dq_response["response"];
-	      return $dq_thread;
-	    }
-	    else
-	    {
-	      $dq_thread = array(
-	                title=> "Article not found",
-	                link => "#"
-	              );
-	      return $dq_thread;
-	    }
+		$dq_request ="http://disqus.com/api/".$api_version."/".$resource.".".$output_type;
+		$dq_parameter = array(
+			"api_key" => $api_key,
+			"thread" => $thread_id
+		);
+		$dq_request = $this->add_query_str($dq_request, $dq_parameter);
+
+		// convert response to php object
+		$dq_response= $this->file_get_contents_curl($dq_request);
+		if($dq_response !== false) {
+			$dq_response = @json_decode($dq_response, true);
+			$dq_thread = $dq_response["response"];
+			return $dq_thread;
+		}
+		else
+		{
+			$dq_thread = array(
+				title=> "Article not found",
+				link => "#"
+			);
+			return $dq_thread;
+		}
 	}
 
 	protected function add_query_str($base_url,$parameters) {
-	  	$i=0;
-	    if (count($parameters) > 0) {
-	    	$new_url = $base_url;
-	     	foreach($parameters as $key => $value) { 
-	        	if($i == 0) $new_url .="?".$key."=".$value;
-	        	else $new_url .="&".$key."=".$value;
-	        	$i +=1;
-	      	}
-	      
-	      	return $new_url;
-	    }
-	    else return $base_url;
+		$i=0;
+		if (count($parameters) > 0) {
+			$new_url = $base_url;
+			foreach($parameters as $key => $value) { 
+				if($i == 0) $new_url .="?".$key."=".$value;
+				else $new_url .="&".$key."=".$value;
+				$i += 1;
+			}
+		  
+			return $new_url;
+		}
+		else return $base_url;
 	}
 
 	protected function no_comments( $comment = false ) {
-	    echo '<div id="disqus_rcw_comment_wrap"><span id="disqus_rcw_no_comments">No Recent Comments Found</span>';
-	    if( $comment === true ) echo '<!-- hourly limit reached -->';
-	    echo '</div>';
+		echo '<div id="disqus_rcw_comment_wrap"><span id="disqus_rcw_no_comments">No Recent Comments Found</span>';
+		if( $comment === true ) echo '<!-- hourly limit reached -->';
+		echo '</div>';
 	}
 
 	protected function file_get_contents_curl( $url ) {
-	    //Source: http://www.codeproject.com/Questions/171271/file_get_contents-url-failed-to-open-stream
+		//Source: http://www.codeproject.com/Questions/171271/file_get_contents-url-failed-to-open-stream
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); //Set curl to return the data instead of printing it to the browser.
@@ -176,7 +172,7 @@ class disqus_recent_comments_widget extends WP_Widget {
 		$data = curl_exec($ch);
 		curl_close($ch);
 		return $data;
-    }
+	}
 	
 	public function disqus_rcw_trim(&$val) {
 		$val = trim($val);
@@ -186,84 +182,83 @@ class disqus_recent_comments_widget extends WP_Widget {
 		
 		extract($args);
 		//basic counter
-	    $comment_counter = 0;
-	    //filtered user array
-	    $filtered_users = explode(",",$style_params["filter_users"]);
-	    //create html string
-	    $recent_comments = $before_widget;
-	    $recent_comments .= $before_title;
-	    $recent_comments .= 'Recent Comments';
-	    $recent_comments .= $after_title;
+		$comment_counter = 0;
+		//filtered user array
+		$filtered_users = explode(",",$style_params["filter_users"]);
+		//create html string
+		$recent_comments = $before_widget;
+		$recent_comments .= $before_title;
+		$recent_comments .= 'Recent Comments';
+		$recent_comments .= $after_title;
 		
 		do_action( 'disqus_rcw_before_comments_loop' );
 		
 		if($comment != 'Invalid API key') {
 		
-		    foreach($comment as $comment_obj) {	      
-		      	// first skip to next if user is filtered
-		      	$author_name = $comment_obj["author"]["name"];
-		      	if( !empty( $filtered_users ) )
-		      	{
-		      		array_walk( $filtered_users, array( $this , 'disqus_rcw_trim' ) );
-		        	if( in_array( $author_name , $filtered_users ) ) continue;
-		      	}
-		      	//everything is fine, let's keep going
-		      	$comment_counter++;
-		     	 //alternate class
-		      	if($comment_counter % 2 !== 0) $wrap_class ="disqus_rcw_comment_wrap";
-		      	else $wrap_class ="disqus_rcw_comment_wrap alter";
+			foreach($comment as $comment_obj) {	      
+				// first skip to next if user is filtered
+				$author_name = $comment_obj["author"]["name"];
+				if( !empty( $filtered_users ) )
+				{
+					array_walk( $filtered_users, array( $this , 'disqus_rcw_trim' ) );
+					if( in_array( $author_name , $filtered_users ) ) continue;
+				}
+				//everything is fine, let's keep going
+				$comment_counter++;
+				 //alternate class
+				if($comment_counter % 2 !== 0) $wrap_class ="disqus_rcw_comment_wrap";
+				else $wrap_class ="disqus_rcw_comment_wrap alter";
 				
-		      	//get rest of comment data
-		      	$author_profile = $comment_obj["author"]["profileUrl"];
-		      	$author_avatar = $comment_obj["author"]["avatar"]["large"]["cache"];
-		      	$message = $comment_obj["raw_message"];
-		      	$comment_id = '#comment-'.$comment_obj["id"];
-		      	$post_time = date(
-	                  $style_params["date_format"] ,
-	                  strtotime($comment_obj['createdAt']) 
-	                );
-	                
-		      	$thread_info = $this->get_thread_info(
-		                      $comment_obj["thread"], 
-		                      $api_key
-		                    );
-		      	$thread_title = $thread_info["title"];
-		      	$thread_link = $thread_info["link"];
-		      
-		      	// shorten comment
-			    $message = $this->shorten_comment(
-		                    $message, 
-		                    $style_params["comment_length"] 
-		                  );
-					  
+				//get rest of comment data
+				$author_profile = $comment_obj["author"]["profileUrl"];
+				$author_avatar = $comment_obj["author"]["avatar"]["large"]["cache"];
+				$message = $comment_obj["raw_message"];
+				$comment_id = '#comment-'.$comment_obj["id"];
+				$post_time = date(
+					$style_params["date_format"] ,
+					strtotime($comment_obj['createdAt'])
+				);
 				
-		      	//create comment html
-		      	$comment_html = '<div class="disqus_rcw_single_comment_wrapper">
-		                <div>
-		                  <div>
-		                    <img class="disqus_rcw_avatar" src="'.$author_avatar.'" alt="'.$author_name.'"/>
-		                    <div class="disqus_rcw_author_name">
-		                      <a href="'.$author_profile.'">'.$author_name.' - <span class="disqus_rcw_post_time">'.$post_time.'</span></a>
-		                    </div>
-		                  </div>
-		                  <div class="disqus_rcw_clear"></div>
-		                </div>
-		                <div>
-		                  <a class="disqus_rcw_thread_title" href="'.$thread_link.'">'.$thread_title.'</a>
-		                  <div class="disqus_rcw_comment_actual_wrapper">
-		                  	<a href="'.$thread_link.$comment_id.'">'.$message.'</a>
-		                  </div>
-		                </div>
-		              </div>';
-		      	$recent_comments .= $comment_html;
-		      	//stop loop when we reach limit
-		      	if($comment_counter == $style_params["comment_limit"]) break;
-		    }
+				$thread_info = $this->get_thread_info(
+					$comment_obj["thread"], 
+					$api_key
+				);
+				$thread_title = $thread_info["title"];
+				$thread_link = $thread_info["link"];
+				
+				// shorten comment
+				$message = $this->shorten_comment(
+					$message, 
+					$style_params["comment_length"] 
+				);
+
+				//create comment html
+				$comment_html = '<div class="disqus_rcw_single_comment_wrapper">
+						<div>
+						  <div>
+							<img class="disqus_rcw_avatar" src="'.$author_avatar.'" alt="'.$author_name.'"/>
+							<div class="disqus_rcw_author_name">
+							  <a href="'.$author_profile.'">'.$author_name.' - <span class="disqus_rcw_post_time">'.$post_time.'</span></a>
+							</div>
+						  </div>
+						  <div class="disqus_rcw_clear"></div>
+						</div>
+						<div>
+						  <a class="disqus_rcw_thread_title" href="'.$thread_link.'">'.$thread_title.'</a>
+						  <div class="disqus_rcw_comment_actual_wrapper">
+							<a href="'.$thread_link.$comment_id.'">'.$message.'</a>
+						  </div>
+						</div>
+					  </div>';
+				$recent_comments .= $comment_html;
+				//stop loop when we reach limit
+				if($comment_counter == $style_params["comment_limit"]) break;
+			}
 		} else $recent_comments .= 'Invalid API Key';
 
 		do_action( 'disqus_rcw_after_comments_loop');
 
-	    // $recent_comments .= '</div>';
+		// $recent_comments .= '</div>';
 		$recent_comments .= $after_widget;
 		
 		$recent_comments = apply_filters( 'disqus_rcw_recent_comments' , $recent_comments );
@@ -273,18 +268,18 @@ class disqus_recent_comments_widget extends WP_Widget {
 
 	public function update($new_instance, $old_instance) {
 		
-    	$instance = $old_instance;
+		$instance = $old_instance;
 		
 		$instance['comment_limit'] = strip_tags($new_instance['comment_limit']);
 		$instance['comment_length'] = strip_tags($new_instance['comment_length']);
 		$instance['filter_users'] = strip_tags($new_instance['filter_users']);
 			
-        return $instance;
+		return $instance;
 		
-    }
+	}
 
 	public function form($instance) {
-    	
+		
 		$comment_limit = isset($instance['comment_limit']) ? esc_attr($instance['comment_limit']) : 5;
 		$comment_length = isset($instance['comment_length']) ? esc_attr($instance['comment_length']) : 200;
 		$filter_users = isset($instance['filter_users']) ? esc_attr($instance['filter_users']) : '';
@@ -302,7 +297,7 @@ class disqus_recent_comments_widget extends WP_Widget {
 		
 		<?php
 		
-    }
+	}
 
 }
 
@@ -311,10 +306,10 @@ function disqus_rcw_init() {
 }
 add_action( 'widgets_init' , 'disqus_rcw_init' );
 
-function disqus_rcw_settings_link($links) { 
-  $settings_link = '<a href="options-general.php?page=disqus_rcw.php">'.__('Settings').'</a>'; 
-  array_unshift($links, $settings_link); 
-  return $links; 
+function disqus_rcw_settings_link($links) {
+	$settings_link = '<a href="options-general.php?page=disqus_rcw.php">'.__('Settings').'</a>';
+	array_unshift($links, $settings_link);
+	return $links;
 }
 $disqus_rcw_basename = plugin_basename(__FILE__); 
 add_filter("plugin_action_links_$disqus_rcw_basename", 'disqus_rcw_settings_link' );
@@ -350,9 +345,9 @@ class disqus_rcw_settings {
 	public function install_redirect() {
 		
 		if (get_option( 'disqus_rcw_settings_do_activation_redirect' , false ) ) {
-	        delete_option( 'disqus_rcw_settings_do_activation_redirect' );
-	        wp_redirect( 'options-general.php?page=disqus_rcw' );
-	    }
+			delete_option( 'disqus_rcw_settings_do_activation_redirect' );
+			wp_redirect( 'options-general.php?page=disqus_rcw' );
+		}
 	}
 	
 	public function settings_api_init() {
